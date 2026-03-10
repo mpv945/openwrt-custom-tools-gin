@@ -1,0 +1,424 @@
+前提条件
+	Go 版本：Gin 需要 Go 版本 1.24 或更高
+	# 查看当前最新稳定版本信息
+	curl -s https://golang.org/VERSION?m=text
+	请确保 Go 已加入你的 PATH 并可在终端中使用。如需安装帮助请参阅官方文档。
+	下载：https://go.dev/doc/devel/release#go1.24 ；下载文件地址：https://go.dev/dl/
+	https://go.dev/dl/go1.26.1.windows-amd64.zip
+	安装教程：https://go.dev/doc/install
+
+第一步：安装 Gin 并初始化项目
+1.1 访问官方网站
+	Go 语言的官方下载地址为：https://golang.org/dl/
+	打开官网后，你会看到最新稳定版本的下载选项。Go 官方提供了以下版本：
+	稳定版本（Stable versions）：推荐生产环境使用
+	发布候选版本（Release candidates）：预发布版本，用于测试新功能
+	Beta 版本：早期测试版本，可能包含未稳定的功能
+1.2 版本选择策略
+	# 查看当前最新稳定版本信息
+	curl -s https://golang.org/VERSION?m=text
+	选择建议：
+	新手用户：始终选择最新的稳定版本
+	企业开发：选择经过验证的次新版本，避免最新版本可能存在的未知问题
+	尝鲜体验：可以考虑 Beta 版本，但仅限开发环境使用
+02｜Windows 系统安装指南
+	2.1 MSI 安装包安装（推荐）
+		下载 MSI 安装包
+		选择 go1.xx.x.windows-amd64.msi（64 位系统）
+		或 go1.xx.x.windows-386.msi（32 位系统）
+		运行安装向导
+
+		# 双击下载的 MSI 文件，按照向导进行安装
+		# 默认安装路径：C:\Program Files\Go\
+		验证环境变量 安装程序会自动配置环境变量，你可以通过以下方式验证：
+
+		# 打开命令提示符（CMD）
+		go version
+		# 预期输出：go version go1.xx.x windows/amd64
+
+		# 检查 GOPATH
+		go env GOPATH
+		# 默认输出：C:\Users\{用户名}\go
+
+	2.2 ZIP 压缩包安装（高级用户）
+		# 1. 下载 ZIP 压缩包并解压到指定目录 【D:\soft\go\go】
+		# 例如解压到：C:\tools\go
+
+		# 2. 手动配置环境变量 【添加到用户环境变量】
+		# 必须以管理员身份运行 PowerShell，否则会报权限错误：[System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\tools\go\bin", [System.EnvironmentVariableTarget]::Machine)
+		# 获取环境变量：[System.Environment]::GetEnvironmentVariable("Path","Machine")  【$env:Path 是 当前进程 PATH，可能不完整】
+		[System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\tools\go\bin", [System.EnvironmentVariableTarget]::User)
+		[System.Environment]::SetEnvironmentVariable("GOROOT", "C:\tools\go", [System.EnvironmentVariableTarget]::User)
+		[System.Environment]::SetEnvironmentVariable("GOPATH", "C:\Users\$env:USERNAME\go", [System.EnvironmentVariableTarget]::User)
+
+		# 3. 重新加载环境变量
+		$env:Path = [System.Environment]::GetEnvironmentVariable("Path","User")
+		如果你刚刚修改了 系统 PATH，可以重新加载：$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" +[System.Environment]::GetEnvironmentVariable("Path","User")
+		删除用户变量
+		[System.Environment]::SetEnvironmentVariable("GOROOT", $null, "User")
+		删除系统变量（需要管理员权限）
+		[System.Environment]::SetEnvironmentVariable("GOROOT", $null, "Machine")
+		基本相当于 Linux 的 export / unset 管理工具。
+
+03｜macOS 系统安装指南
+	3.1 PKG 安装包安装
+		下载 PKG 安装包
+
+		选择 go1.xx.x.darwin-amd64.pkg（Intel 芯片）
+		或 go1.xx.x.darwin-arm64.pkg（Apple Silicon M1/M2）
+		图形界面安装
+
+		# 双击 PKG 文件，按照安装向导完成安装
+		# 默认安装路径：/usr/local/go
+		验证安装
+
+		go version
+		# 输出示例：go version go1.xx.x darwin/amd64
+	3.2 Homebrew 安装（开发者推荐）
+		# 1. 使用 Homebrew 安装 Go
+		brew install go
+
+		# 2. 验证安装
+		brew list go
+
+		# 3. 升级 Go 到最新版本
+		brew upgrade go
+
+		# 4. 查看安装信息
+		brew info go
+04｜Linux 系统安装指南
+	4.1 二进制压缩包安装（通用方法）
+		# 1. 下载最新稳定版本（以 1.21.5 为例）
+		wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
+
+		# 2. 验证下载文件完整性
+		wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz.asc
+		gpg --verify go1.21.5.linux-amd64.tar.gz.asc
+
+		# 3. 解压到 /usr/local（推荐路径）
+		sudo rm -rf /usr/local/go  # 如果已存在旧版本
+		sudo tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
+
+		# 4. 配置环境变量
+		echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+		echo 'export GOPATH=$HOME/go' >> ~/.bashrc
+		echo 'export PATH=$PATH:$GOPATH/bin' >> ~/.bashrc
+
+		# 5. 重新加载配置
+		source ~/.bashrc
+	4.2 各发行版包管理器安装
+		Ubuntu/Debian
+			# 添加官方 PPA 源
+			sudo add-apt-repository ppa:longsleep/golang-backports
+			sudo apt update
+
+			# 安装 Go
+			sudo apt install golang-go
+
+			# 验证版本
+			go version
+		CentOS/RHEL/Fedora
+			# CentOS/RHEL
+			sudo yum install golang
+
+			# Fedora
+			sudo dnf install golang
+
+			# 验证安装
+			go version
+		Arch Linux
+			# 使用 pacman 安装
+			sudo pacman -S go
+
+			# 验证安装
+			go version
+05｜环境变量配置详解
+	5.1 核心环境变量说明
+		 变量名	   说明	             默认值	           配置建议
+		GOROOT	Go 安装目录			安装路径			一般无需修改
+		GOPATH	工作空间目录			$HOME/go		可自定义项目路径
+		GOBIN	可执行文件目录			$GOPATH/bin		建议加入 PATH
+		GOOS	目标操作系统			当前系统			交叉编译时使用
+		GOARCH	目标架构				当前架构			交叉编译时使用
+	5.2 高级环境配置
+		# 创建并编辑配置文件
+		vim ~/.bash_profile  # macOS
+		vim ~/.bashrc       # Linux
+
+		# 添加以下配置
+		export GOROOT=/usr/local/go
+		export GOPATH=$HOME/go
+		export GOBIN=$GOPATH/bin
+		export PATH=$PATH:$GOROOT/bin:$GOBIN
+
+		# Go 模块代理配置（国内用户推荐）
+		export GOPROXY=https://goproxy.cn,direct
+		export GO111MODULE=on
+
+		# 私有仓库配置
+		export GOPRIVATE=*.corp.example.com
+06｜安装验证与测试
+	6.1 基础验证
+		# 1. 版本验证
+		go version
+		# 预期输出：go version go1.xx.x 操作系统/架构
+
+		# 2. 环境变量验证
+		go env
+		# 查看所有 Go 环境变量配置
+
+		# 3. 工作空间验证
+		go env GOPATH
+		# 确认工作目录设置正确
+	6.2 创建第一个 Go 程序
+		# 1. 创建工作目录
+		mkdir -p $GOPATH/src/hello
+		cd $GOPATH/src/hello
+
+		# 2. 创建 main.go 文件
+		cat > main.go << 'EOF'
+		package main
+
+		import "fmt"
+
+		func main() {
+			fmt.Println("Hello, Go World! 🚀")
+			fmt.Printf("Go version: %s\n", runtime.Version())
+		}
+		EOF
+
+		# 3. 运行程序
+		go run main.go
+
+		# 4. 构建可执行文件
+		go build -o hello
+		./hello
+	6.3 模块模式测试（推荐）
+		# 1. 创建项目目录
+		mkdir hello-module && cd hello-module
+
+		# 2. 初始化模块
+		go mod init example.com/hello
+
+		# 3. 创建 main.go
+		cat > main.go << 'EOF'
+		package main
+
+		import (
+			"fmt"
+			"rsc.io/quote"
+		)
+
+		func main() {
+			fmt.Println(quote.Go())
+		}
+		EOF
+
+		# 4. 运行（自动下载依赖）
+		go run main.go
+	7.1 环境变量未生效
+		问题表现：go: command not found
+
+		解决方案
+		# Linux/macOS
+		source ~/.bashrc  # 或 ~/.bash_profile
+
+		# Windows
+		# 重新打开命令提示符或 PowerShell
+	7.2 代理配置问题（国内用户）
+		问题表现：dial tcp: i/o timeout
+
+		解决方案：
+		# 设置国内代理
+		export GOPROXY=https://goproxy.cn,direct
+		# 或
+		export GOPROXY=https://mirrors.aliyun.com/goproxy/,direct
+
+		# 验证代理设置
+		go env GOPROXY
+	7.3 版本冲突问题
+	问题表现：多个 Go 版本冲突
+
+	解决方案：
+		# 查看所有 go 命令位置
+		which -a go  # Linux/macOS
+		where go     # Windows
+
+		# 移除旧版本
+		sudo rm -rf /usr/local/go  # Linux/macOS
+		# Windows 通过"应用和功能"卸载
+
+		# 清理环境变量
+		echo $PATH | tr ':' '\n' | grep -v go  # Linux/macOS
+	7.4 权限问题
+	问题表现：permission denied
+
+	解决方案：
+		# Linux/macOS 修复权限
+		sudo chown -R $USER:$USER /usr/local/go
+		sudo chmod -R 755 /usr/local/go
+
+		# 或安装到用户目录
+		mkdir -p ~/tools
+		tar -C ~/tools -xzf go1.xx.x.linux-amd64.tar.gz
+		echo 'export PATH=$PATH:$HOME/tools/go/bin' >> ~/.bashrc
+09｜进阶配置与优化
+	9.1 Go Modules 配置优化
+		# 启用 Go Modules（Go 1.16+ 默认开启）
+		export GO111MODULE=on
+
+		# 配置模块代理（国内加速）
+		go env -w GOPROXY=https://goproxy.cn,direct
+
+		# 配置私有仓库
+		export GOPRIVATE=*.internal.company.com
+		export GONOSUMDB=*.internal.company.com
+
+		# 验证配置
+		go env | grep -E "GOPROXY|GOPRIVATE"
+
+		# 配置 git 忽略文件
+		echo "/vendor/\n*.exe\n*.dll\n*.so\n*.dylib\n.DS_Store" >> ~/.gitignore_global
+		git config --global core.excludesfile ~/.gitignore_global
+	9.2 性能调优参数
+		# 编译优化
+		export CGO_ENABLED=1  # 启用 CGO
+		export GOOS=linux     # 目标操作系统
+		export GOARCH=amd64   # 目标架构
+
+		# 内存调优
+		export GOGC=100       # GC 触发百分比
+		export GOMEMLIMIT=1GiB # 内存限制
+
+		# 并发调优
+		export GOMAXPROCS=$(nproc)  # 使用所有 CPU 核心
+
+
+第二步：编写你的第一个 Gin 应用
+创建 main.go 文件：touch main.go
+
+打开 main.go，输入以下代码：
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+  router := gin.Default()
+  router.GET("/ping", func(c *gin.Context) {
+    c.JSON(200, gin.H{
+      "message": "pong",
+    })
+  })
+  router.Run() // 默认监听 0.0.0.0:8080
+}
+
+第三步：运行你的 API 服务
+用如下命令启动服务：go run main.go
+在浏览器中访问 http://localhost:8080/ping ，你会看到：
+{"message":"pong"}
+
+02 创建项目
+	先创建项目文件夹并初始化 Go 模块：
+		powershell 打开： mkdir -p ~/GolandProjects/openwrt-custom-tools-gin && cd ~/GolandProjects/openwrt-custom-tools-gin
+		# go mod init gin-quickstart [支持github库的方式：go mod init github.com/yourname/gin-iot-server】
+		go mod init github.com/mpv945/openwrt-custom-tools-gin
+		# Go 模块代理配置（国内用户推荐）
+		export GOPROXY=https://goproxy.cn,direct
+		export GO111MODULE=on
+		# Powershell
+		[System.Environment]::SetEnvironmentVariable("GOPROXY", "https://goproxy.cn,direct", [System.EnvironmentVariableTarget]::User)
+		删除环境变量
+			[System.Environment]::SetEnvironmentVariable("GOPROXY", $null, "User") 或者 [System.Environment]::SetEnvironmentVariable("GOPROXY", $null, "Machine")
+			基本相当于 Linux 的 export / unset 管理工具。
+	安装 Gin 依赖：
+		# go get -u github.com/gin-gonic/gin 【go get 和 go get -u 的核心区别是：是否升级依赖版本】
+		| 命令                | 作用   |
+		| ----------------- | ---- |
+		| go get pkg        | 添加依赖 |
+		| go get pkg@latest | 最新版本 |
+		| go get pkg@v1.2.3 | 指定版本 |
+		| go get -u pkg     | 升级依赖 |
+		| go mod tidy       | 清理依赖 |
+
+		安装核心依赖
+		go get github.com/gin-gonic/gin
+		go get github.com/redis/go-redis/v9
+		go get github.com/go-redsync/redsync/v4 redis分布锁实现库
+		go get github.com/eclipse/paho.mqtt.golang 【github.com/eclipse/paho.golang/paho v5版本实现】
+		# 配置管理框架，类似 Java 里的：读取配置文件，环境变量，命令行参数，动态配置，多环境配置。支持格式：【yaml json toml env ini】
+		go get github.com/spf13/viper
+		# 日志组件
+		go get go.uber.org/zap
+		# 滚动日志
+		go get gopkg.in/natefinch/lumberjack.v2
+二、企业级目录结构
+推荐结构（非常重要）
+gin-iot-server
+├── cmd
+│   └── server
+│       └── main.go
+│
+├── internal
+│   ├── api
+│   │   └── device_api.go
+│   │
+│   ├── service
+│   │   └── device_service.go
+│   │
+│   ├── mqtt
+│   │   └── mqtt_client.go
+│   │
+│   ├── redis
+│   │   └── redis.go
+│   │
+│   ├── config
+│   │   └── config.go
+│   │
+│   └── router
+│       └── router.go
+│
+├── pkg
+│   └── logger
+│       └── logger.go
+│
+├── configs
+│   └── config.yaml
+│
+├── go.mod
+└── go.sum
+说明：
+| 目录       | 用途   |
+| -------- | ---- |
+| cmd      | 程序入口 |
+| internal | 核心业务 |
+| pkg      | 通用组件 |
+| configs  | 配置文件 |
+
+推荐代理：
+go env -w GOPROXY=https://goproxy.cn,direct 【确认代理是否修改成功：go env GOPROXY】 【恢复成默认：go env -u GOPROXY】，查看go env或只查看某个：go env GOPROXY
+系统变量删除  Windows PowerShell： Remove-Item Env:GOPROXY 或 Linux / Mac： unset GOPROXY
+然后重新执行：go mod tidy(代码未使用，不会下载，代码使用库执行才能下载) 或者 go get 重新下载依赖； go get -u 更新依赖
+
+# json序列库
+go get github.com/json-iterator/go
+# http客户端
+go get github.com/go-resty/resty/v2
+# Unix crypt 格式的加密算法
+go get github.com/GehirnInc/crypt
+# 密码签名算法
+go get golang.org/x/crypto/bcrypt 【更高安全：go get golang.org/x/crypto/argon2】
+# 操作excel
+go get github.com/xuri/excelize/v2
+# 定时任务
+go get github.com/robfig/cron/v3
+# 数据库操作
+go get github.com/jmoiron/sqlx
+# mysql：
+go get github.com/go-sql-driver/mysql
+# PostgreSQL
+go get github.com/jackc/pgx/v5/stdlib
+# UUID v1~7
+go get github.com/google/uuid
+
+启动：go run .\src\com\ewancle\main.go
+$env:CGO_ENABLED="0"; $env:GOOS="windows"; $env:GOARCH="amd64"; go build -trimpath -ldflags "-s -w" -o build/app.exe ./src/com/ewancle 【main.go位置，如果在根目录不需要指定】

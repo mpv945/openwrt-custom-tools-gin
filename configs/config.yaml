@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+db:
+  host: ${DB_HOST:127.0.0.1}
+  port: ${DB_PORT:3306}
+  user: ${DB_USER:root}
+  password: ${DB_PWD:root}
+  dbname: ${DB_DBNAME:test}
+  driverName: ${DB_DRIVER_NAME:mysql}
+
+redis:
+  addr: ${REDIS_ADDR:127.0.0.1:1607}
+  password: ${REDIS_PWD:12345}
+  db: 0
+
+mqtt:
+  broker: tcp://${MQTT_ADDR:127.0.0.1:1883}
+  userName: ${MQTT_NAME:test}
+  password: ${MQTT_PWD:test}
+  clientId: gin-iot-server
+  topic: device/#
+
+log:
+  level: ${LOG_LEVEL:info}
+  file: ${LOG_FILE:logs/app.log}
+  maxSize: ${LOG_MAX_SIZE:100}
+  maxBackups: ${LOG_MAX_BACKUPS:5}
+  maxAge: ${LOG_MAX_AGE:30}
+  compress: ${LOG_COMPRESS:true}
