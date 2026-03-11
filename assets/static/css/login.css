@@ -1,0 +1,60 @@
+body {
+
+    height: 100vh;
+
+    background-size: cover;
+
+    background: linear-gradient(
+            rgba(0, 0, 0, 0.45),
+            rgba(0, 0, 0, 0.45)
+    ),
+    url("/public/static/img/bg.jpg");
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+.login-wrapper {
+    width: 100%;
+    max-width: 420px;
+}
+
+.login-card {
+
+    background: white;
+
+    padding: 40px;
+
+    border-radius: 12px;
+
+    box-shadow:
+            0 10px 25px rgba(0,0,0,0.15);
+
+    animation: fadeIn .4s ease;
+}
+
+.form-control {
+    height: 45px;
+}
+
+.btn-primary {
+    height: 45px;
+    font-weight: 600;
+}
+
+@keyframes fadeIn {
+
+    from {
+        opacity:0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity:1;
+        transform: translateY(0);
+    }
+}

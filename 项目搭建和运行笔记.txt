@@ -419,6 +419,8 @@ go get github.com/go-sql-driver/mysql
 go get github.com/jackc/pgx/v5/stdlib
 # UUID v1~7
 go get github.com/google/uuid
+# 跨域请求
+go get github.com/gin-contrib/cors
 
 启动：go run .\src\com\ewancle\main.go
 $env:CGO_ENABLED="0"; $env:GOOS="windows"; $env:GOARCH="amd64"; go build -trimpath -ldflags "-s -w" -o build/app.exe ./src/com/ewancle 【main.go位置，如果在根目录不需要指定】

@@ -8,6 +8,7 @@ import (
 	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/db"
 	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/router"
 	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/scheduler"
+	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/utils/jwt"
 	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/utils/logger"
 	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/utils/mqtt"
 	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/utils/redis"
@@ -18,12 +19,17 @@ func main() {
 	// 生产环境： 默认启动 gin.Default() 时就是 debug 模式。test；适合单元测试，日志更少
 	gin.SetMode(gin.ReleaseMode)
 	//gin.SetMode(gin.TestMode)
+	// 禁用控制台颜色
+	// gin.DisableConsoleColor()
 
 	// 初始化配置
 	config.Init()
 
 	// 初始化日志
 	logger.Init()
+
+	// 初始化token值
+	jwt.InitJWT(config.Config.GetString("jwt.secret"))
 
 	// 初始化数据库
 	db.InitDB(
