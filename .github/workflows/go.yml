@@ -87,11 +87,12 @@ jobs:
           git --version
           git config --global user.name "CI"
           git config --global user.email "ci@example.com"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Checkout code
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # ，直接下载代码到当前目录, 用 . 作为目标路径就可以了
+          # 直接下载代码到当前目录, 用 . 作为目标路径就可以了
           git clone --depth 1 https://github.com/${{ github.repository }} .
           git fetch --tags
           git checkout ${{ github.sha }}
