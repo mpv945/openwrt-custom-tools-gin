@@ -61,5 +61,5 @@ jobs:
 
       - name: Install deps
         run: |
-          # apk add --no-cache git build-base
+          apk add --no-cache git build-base
           uname -ar
