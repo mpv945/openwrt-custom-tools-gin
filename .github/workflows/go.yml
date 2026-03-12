@@ -22,7 +22,7 @@ jobs:
       with:
         #go-version: '1.26'
         go-version-file: 'go.mod'
-        //token: ${{ github.token }} 用在api调用时候,和下面作用相同
+        # token: ${{ github.token }} 用在api调用时候,和下面作用相同
         token: ${{ secrets.GITHUB_TOKEN }}
         cache-dependency-path: 'go.sum'
     - name: Call GitHub API
@@ -36,3 +36,30 @@ jobs:
 
     #- name: Test
     #  run: go test -v ./...
+  docker-build:
+    runs-on: ubuntu-latest
+    #services:
+    #  redis:
+    #    image: redis
+    #    ports:
+    #      - 6379:6379
+    container:
+      image: golang:1.26-alpine
+      #credentials:
+      #  username: myuser
+      #  password: ${{ secrets.DOCKER_PASSWORD }}
+      env:
+        GO111MODULE: on
+        CGO_ENABLED: 0
+      #ports:
+      #  - 8080
+      #volumes:
+      #  - my_docker_volume:/volume_mount
+      #options: --cpus 2 --memory 4g 【--privileged --user root】
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install deps
+        run: |
+          # apk add --no-cache git build-base
+          uname -ar
