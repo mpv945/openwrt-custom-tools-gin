@@ -151,6 +151,7 @@ jobs:
           # 上传到当前 workflow run
           RUN_ID=$(gh run list -L 1 --json databaseId -q '.[0].databaseId')
           echo "Workflow run ID: $RUN_ID"
+          chmod +x ./upload-artifact.sh
           ./upload-artifact.sh ${{ github.event.repository.name }}-linux-arm64-musl dist/${{ github.event.repository.name }}-linux-arm64-musl
 
   matrix-build:
