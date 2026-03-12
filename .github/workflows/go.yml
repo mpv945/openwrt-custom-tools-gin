@@ -16,7 +16,12 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v6
-
+    - name: install musl
+      run: |
+        sudo apt update \
+        && sudo apt install -y --no-install-recommends musl-tools musl-dev \
+        && sudo apt clean \
+        && sudo rm -rf /var/lib/apt/lists/*
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
@@ -30,6 +35,21 @@ jobs:
         curl -H "Authorization: Bearer ${{ github.token }}" \
         https://api.github.com/repos/${{ github.repository }}
         uname -ar
+    - name: Build
+      run: |
+        CGO_ENABLED=1 \
+        CC=musl-gcc \
+        GOOS=linux \
+        GOARCH=amd64 \
+        go build \
+        -tags "netgo osusergo" \
+        -trimpath -buildvcs=false -ldflags '-s -w -linkmode external -extldflags "-static"' \
+        -o dist/${{ github.event.repository.name }}-linux-amd64-musl ./src/com/ewancle
+    - name: Upload artifact
+      uses: actions/upload-artifact@v6
+      with:
+        name: ${{ github.event.repository.name }}-linux-amd64-musl
+        path: dist/*
 
     #- name: Build
     #  run: go build -v ./...
@@ -61,7 +81,7 @@ jobs:
 
       - name: Install deps
         run: |
-          apk add --no-cache git build-base
+          apk add --no-cache git build-base musl-dev
           uname -ar
   matrix-build:
     runs-on: ubuntu-latest
@@ -84,6 +104,7 @@ jobs:
           cache-dependency-path: 'go.sum'
 
       # -ldflags "-s -w -H windowsgui" GUI 程序不弹 console， 如果是服务：设置不要用 windowsgui。
+      # CGO_ENABLED=1 1️⃣ 可以调用 C/C++ 库 【sqlite, libc, libpcap ] glibc 都建议开启
       - name: Build
         run: |
           mkdir -p dist
@@ -95,8 +116,8 @@ jobs:
 
           GOOS=${{ matrix.goos }} \
           GOARCH=${{ matrix.goarch }} \
-          CGO_ENABLED=0 \
-          go build -trimpath -buildvcs=false -ldflags="-s -w" \
+          CGO_ENABLED=1 \
+          go build -trimpath -buildvcs=false -ldflags "-s -w" \
           -o dist/${{ github.event.repository.name }}-${{ matrix.goos }}-${{ matrix.goarch }}$EXT ./src/com/ewancle
 
       - name: Upload artifact
