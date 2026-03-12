@@ -121,19 +121,19 @@ jobs:
       #  with:
       #    name: ${{ github.event.repository.name }}-linux-arm64-musl
       #    path: dist/*
-      - name: Install GitHub CLI
-        run: |
-          GH_VER=2.36.0
-          ARCH=$(uname -m)
-          case $ARCH in
-            x86_64) ARCH=amd64 ;;
-            aarch64) ARCH=arm64 ;;
-          esac
-          curl -L -o gh.tar.gz https://github.com/cli/cli/releases/download/v${GH_VER}/gh_${GH_VER}_linux_${ARCH}.tar.gz
-          tar -xzf gh.tar.gz
-          mv gh_${GH_VER}_linux_${ARCH}/bin/gh /usr/local/bin/gh
-          rm -rf gh_${GH_VER}_linux_${ARCH} gh.tar.gz
-          gh --version
+      #- name: Install GitHub CLI
+      #  run: |
+      #    GH_VER=2.36.0
+      #    ARCH=$(uname -m)
+      #    case $ARCH in
+      #      x86_64) ARCH=amd64 ;;
+      #      aarch64) ARCH=arm64 ;;
+      #    esac
+      #    curl -L -o gh.tar.gz https://github.com/cli/cli/releases/download/v${GH_VER}/gh_${GH_VER}_linux_${ARCH}.tar.gz
+      #    tar -xzf gh.tar.gz
+      #    mv gh_${GH_VER}_linux_${ARCH}/bin/gh /usr/local/bin/gh
+      #    rm -rf gh_${GH_VER}_linux_${ARCH} gh.tar.gz
+      #    gh --version
       - name: Upload artifact
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -150,7 +150,7 @@ jobs:
           curl -X POST \
           -H "Authorization: Bearer $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github+json" \
-          -F "file=dist/${{ github.event.repository.name }}-linux-arm64-musl" \
+          -F "file=@dist/${{ github.event.repository.name }}-linux-arm64-musl" \
           "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${{ github.event.repository.name }}-linux-arm64-musl"
 
   matrix-build:
