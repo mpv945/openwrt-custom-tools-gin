@@ -103,7 +103,7 @@ jobs:
           # git submodule update --init --recursive
       - name: Install deps
         run: |
-          apk add --no-cache curl build-base musl-dev gcc
+          apk add --no-cache curl build-base musl-dev gcc zip
           uname -ar
       - name: Build
         # 对于 Alpine + CGO，只需 CC=gcc 就能正确编译静态 binary。GCC 默认会使用系统的 musl libc，因为 Alpine 是基于 musl 构建的。
@@ -139,6 +139,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # GH_TOKEN 设置这个变量，无需登录
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
         run: |
           # echo "${GITHUB_TOKEN}" | gh auth login --with-token
           # gh run upload-artifact my-artifact.zip
@@ -149,11 +151,7 @@ jobs:
           # 上传到当前 workflow run
           RUN_ID=$(gh run list -L 1 --json databaseId -q '.[0].databaseId')
           echo "Workflow run ID: $RUN_ID"
-          curl -X POST \
-          -H "Authorization: Bearer $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github+json" \
-          -F "file=@dist/${{ github.event.repository.name }}-linux-arm64-musl" \
-          "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts?name=${{ github.event.repository.name }}-linux-arm64-musl"
+          ./upload-artifact.sh ${{ github.event.repository.name }}-linux-arm64-musl dist/${{ github.event.repository.name }}-linux-arm64-musl
 
   matrix-build:
     runs-on: ubuntu-latest
