@@ -87,7 +87,7 @@ jobs:
           git --version
           git config --global user.name "CI"
           git config --global user.email "ci@example.com"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory /__w/openwrt-custom-tools-gin/openwrt-custom-tools-gin
       - name: Checkout code
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
