@@ -114,11 +114,11 @@ jobs:
           -tags "netgo osusergo" \
           -trimpath -buildvcs=false -ldflags '-s -w -linkmode external -extldflags "-static"' \
           -o dist/${{ github.event.repository.name }}-linux-arm64-musl ./src/com/ewancle
-      - name: Upload artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: ${{ github.event.repository.name }}-linux-arm64-musl
-          path: dist/*
+      #- name: Upload artifact
+      #  uses: actions/upload-artifact@v6
+      #  with:
+      #    name: ${{ github.event.repository.name }}-linux-arm64-musl
+      #    path: dist/*
 
   matrix-build:
     runs-on: ubuntu-latest
