@@ -57,7 +57,7 @@ jobs:
     #- name: Test
     #  run: go test -v ./...
   docker-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     #services:
     #  redis:
     #    image: redis
@@ -83,6 +83,22 @@ jobs:
         run: |
           apk add --no-cache git build-base musl-dev
           uname -ar
+      - name: Build
+        run: |
+          CGO_ENABLED=1 \
+          CC=musl-gcc \
+          GOOS=linux \
+          GOARCH=arm64 \
+          go build \
+          -tags "netgo osusergo" \
+          -trimpath -buildvcs=false -ldflags '-s -w -linkmode external -extldflags "-static"' \
+          -o dist/${{ github.event.repository.name }}-linux-arm64-musl ./src/com/ewancle
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ github.event.repository.name }}-linux-arm64-musl
+          path: dist/*
+
   matrix-build:
     runs-on: ubuntu-latest
 
@@ -105,6 +121,7 @@ jobs:
 
       # -ldflags "-s -w -H windowsgui" GUI 程序不弹 console， 如果是服务：设置不要用 windowsgui。
       # CGO_ENABLED=1 1️⃣ 可以调用 C/C++ 库 【sqlite, libc, libpcap ] glibc 都建议开启
+      #  当你开启 CGO_ENABLED=1 时，Go 会调用系统的 C 编译器（通常是 GCC）去编译 runtime/cgo 的汇编文件。 （所以系统也要进行交叉gcc库：apt install gcc-aarch64-linux-gnu】 或设置=0
       - name: Build
         run: |
           mkdir -p dist
@@ -116,7 +133,7 @@ jobs:
 
           GOOS=${{ matrix.goos }} \
           GOARCH=${{ matrix.goarch }} \
-          CGO_ENABLED=1 \
+          CGO_ENABLED=0 \
           go build -trimpath -buildvcs=false -ldflags "-s -w" \
           -o dist/${{ github.event.repository.name }}-${{ matrix.goos }}-${{ matrix.goarch }}$EXT ./src/com/ewancle
 
