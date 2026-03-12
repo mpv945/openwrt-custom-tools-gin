@@ -83,6 +83,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           cache-dependency-path: 'go.sum'
 
+      # -ldflags "-s -w -H windowsgui" GUI 程序不弹 console， 如果是服务：设置不要用 windowsgui。
       - name: Build
         run: |
           mkdir -p dist
@@ -94,7 +95,8 @@ jobs:
 
           GOOS=${{ matrix.goos }} \
           GOARCH=${{ matrix.goarch }} \
-          go build -ldflags="-s -w" \
+          CGO_ENABLED=0 \
+          go build -trimpath -buildvcs=false -ldflags="-s -w" \
           -o dist/${{ github.event.repository.name }}-${{ matrix.goos }}-${{ matrix.goarch }}$EXT ./src/com/ewancle
 
       - name: Upload artifact
