@@ -63,3 +63,42 @@ jobs:
         run: |
           apk add --no-cache git build-base
           uname -ar
+  matrix-build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          #go-version: '1.26'
+          go-version-file: 'go.mod'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          cache-dependency-path: 'go.sum'
+
+      - name: Build
+        run: |
+          mkdir -p dist
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            EXT=".exe"
+          else
+            EXT=""
+          fi
+
+          GOOS=${{ matrix.goos }} \
+          GOARCH=${{ matrix.goarch }} \
+          go build -ldflags="-s -w" \
+          -o dist/${{ github.event.repository.name }}-${{ matrix.goos }}-${{ matrix.goarch }}$EXT ./src/com/ewancle
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ github.event.repository.name }}-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
