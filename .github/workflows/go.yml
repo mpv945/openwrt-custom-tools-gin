@@ -135,8 +135,10 @@ jobs:
           rm -rf gh_${GH_VER}_linux_${ARCH} gh.tar.gz
           gh --version
       - name: Upload artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+          echo "${GITHUB_TOKEN}" | gh auth login --with-token
           # gh run upload-artifact my-artifact.zip
           # 上传文件或目录，并指定 artifact 名称
           gh run upload-artifact dist/${{ github.event.repository.name }}-linux-arm64-musl --name "${{ github.event.repository.name }}-linux-arm64-musl"
