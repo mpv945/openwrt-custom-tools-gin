@@ -103,7 +103,7 @@ jobs:
           # git submodule update --init --recursive
       - name: Install deps
         run: |
-          apk add --no-cache git build-base musl-dev gcc
+          apk add --no-cache curl build-base musl-dev gcc
           uname -ar
       - name: Build
         # 对于 Alpine + CGO，只需 CC=gcc 就能正确编译静态 binary。GCC 默认会使用系统的 musl libc，因为 Alpine 是基于 musl 构建的。
