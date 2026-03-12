@@ -40,6 +40,7 @@ CREATE_RESP=$(curl -s -X POST \
     "workflow_run_id": '"${RUN_ID}"'
   }'
 )
+echo "Response: $CREATE_RESP"
 
 UPLOAD_URL=$(echo "$CREATE_RESP" | grep -o '"upload_url": "[^"]*' | grep -o '[^"]*$')
 if [ -z "$UPLOAD_URL" ]; then
