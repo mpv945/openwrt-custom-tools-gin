@@ -77,10 +77,14 @@ jobs:
       #  - my_docker_volume:/volume_mount
       #options: --cpus 2 --memory 4g 【--privileged --user root】
     steps:
+      - name: Install deps
+        run: |
+          apk add --no-cache git
       #- uses: actions/checkout@v6 # Node.js 官方二进制只提供 glibc + x86_64 版本的 Alpine 镜像支持
       - name: Set up git
         run: |
-          git --version  # 检查 git 是否存在
+          # 检查 git 是否存在
+          git --version
           git config --global user.name "CI"
           git config --global user.email "ci@example.com"
       - name: Checkout code
