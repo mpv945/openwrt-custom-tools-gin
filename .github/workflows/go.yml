@@ -64,7 +64,7 @@ jobs:
     #    ports:
     #      - 6379:6379
     container:
-      image: golang:1.26-alpine
+      image: golang:1.26-alpine # 不能运行在arm
       #credentials:
       #  username: myuser
       #  password: ${{ secrets.DOCKER_PASSWORD }}
@@ -77,8 +77,25 @@ jobs:
       #  - my_docker_volume:/volume_mount
       #options: --cpus 2 --memory 4g 【--privileged --user root】
     steps:
-      - uses: actions/checkout@v6
-
+      #- uses: actions/checkout@v6 # Node.js 官方二进制只提供 glibc + x86_64 版本的 Alpine 镜像支持
+      - name: Set up git
+        run: |
+          git --version  # 检查 git 是否存在
+          git config --global user.name "CI"
+          git config --global user.email "ci@example.com"
+      - name: Checkout code
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # ，直接下载代码到当前目录, 用 . 作为目标路径就可以了
+          git clone --depth 1 https://github.com/${{ github.repository }} .
+          git fetch --tags
+          git checkout ${{ github.sha }}
+          # 私有仓库
+          # git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} .
+          # git checkout ${{ github.sha }}
+          # actions/checkout@v6 会自动处理 submodules，如果自己用 git clone，需要手动：
+          # git submodule update --init --recursive
       - name: Install deps
         run: |
           apk add --no-cache git build-base musl-dev
