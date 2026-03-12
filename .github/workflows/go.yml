@@ -87,7 +87,7 @@ jobs:
           git --version
           git config --global user.name "CI"
           git config --global user.email "ci@example.com"
-          git config --global --add safe.directory /__w/openwrt-custom-tools-gin/openwrt-custom-tools-gin
+          git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
       - name: Checkout code
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -103,7 +103,7 @@ jobs:
           # git submodule update --init --recursive
       - name: Install deps
         run: |
-          apk add --no-cache git build-base musl-dev
+          apk add --no-cache git build-base musl-dev gcc
           uname -ar
       - name: Build
         run: |
