@@ -4,8 +4,8 @@
 name: Go
 
 on:
-  # push:
-  #  branches: [ "main" ]
+  push:
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -14,15 +14,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout source code
+      uses: actions/checkout@v6
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
-        go-version: '1.20'
+        #go-version: '1.26'
+        go-version-file: 'go.mod'
+        //token: ${{ github.token }} 用在api调用时候,和下面作用相同
+        token: ${{ secrets.GITHUB_TOKEN }}
+        cache-dependency-path: 'go.sum'
+    - name: Call GitHub API
+      run: |
+        curl -H "Authorization: Bearer ${{ github.token }}" \
+        https://api.github.com/repos/${{ github.repository }}
+        uname -ar
 
-    - name: Build
-      run: go build -v ./...
+    #- name: Build
+    #  run: go build -v ./...
 
-    - name: Test
-      run: go test -v ./...
+    #- name: Test
+    #  run: go test -v ./...

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SSE 测试页面</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    #messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+    input, button { margin: 5px 0; padding: 5px; }
+  </style>
+</head>
+<body>
+
+<h2>SSE 测试页面</h2>
+
+<div>
+  <label>Token:</label>
+  <input id="token" value="YOUR_JWT_TOKEN_HERE" style="width:300px"/>
+  <button id="connectBtn">连接 SSE</button>
+</div>
+
+<div>
+  <label>订阅 Topic:</label>
+  <input id="topicInput" placeholder="notice"/>
+  <button id="subscribeBtn">订阅</button>
+</div>
+
+<h3>接收到的消息</h3>
+<div id="messages"></div>
+
+<script>
+let es = null;
+let clientId = null;
+
+// 连接 SSE
+document.getElementById('connectBtn').onclick = () => {
+    const token = document.getElementById('token').value.trim();
+    if (!token) { alert("请填写 token"); return; }
+
+    //es = new EventSource(`/sse?token=${token}`);
+    // const es = new EventSource("http://127.0.0.1:9000/sse")
+    const es = new EventSource("http://127.0.0.1:9000/sse?topic=order,chat")
+    //const es = new EventSource("http://127.0.0.1:9000/sse?topic=order")
+
+
+    es.onopen = () => {
+        logMessage("SSE 连接已建立");
+    };
+
+    es.onerror = (err) => {
+        logMessage("SSE 连接错误或已断开");
+        console.error(err);
+    };
+
+
+    es.onmessage = (e) => {
+        logMessage(`Event: message, Data: ${e.data}`);
+    };
+
+    // 可以监听自定义事件
+    es.addEventListener("notice", e => {
+        logMessage(`Event: notice, Data: ${e.data}`);
+    });
+
+    es.addEventListener("order", e => {
+        logMessage(`Event: order, Data: ${e.data}`);
+    });
+
+    // 如果服务端返回 clientId
+    es.addEventListener("init", e => {
+        const data = JSON.parse(e.data);
+        clientId = data.clientId;
+        logMessage("客户端 ID 已分配: " + clientId);
+    });
+};
+
+// 订阅 Topic
+document.getElementById('subscribeBtn').onclick = () => {
+    const topic = document.getElementById('topicInput').value.trim();
+    if (!topic) { alert("请输入 topic"); return; }
+    if (!clientId) { alert("SSE 未分配 clientId，请先连接"); return; }
+
+    fetch(`http://127.0.0.1:9000/subscribe?clientId=${clientId}&topic=${topic}`, { method: 'POST' })
+        .then(res => res.text())
+        .then(data => logMessage(`订阅 topic '${topic}' 结果: ${data}`))
+        .catch(err => logMessage(`订阅失败: ${err}`));
+};
+
+function connect() {
+
+    const es = new EventSource("/sse")
+
+    es.onopen = () => {
+        logMessage("SSE 连接已建立");
+    };
+
+    es.onmessage = (e) => {
+        console.log("message:", e.data)
+        logMessage(`Event: message, Data: ${e.data}`);
+    }
+
+    es.onerror = (e) => {
+
+        console.log("SSE 连接错误，准备重连")
+        logMessage("SSE 连接错误，准备重连");
+        console.error(err);
+
+        es.close()
+
+        setTimeout(connect, 3000)
+    }
+}
+
+//connect()
+
+// 输出消息到页面
+function logMessage(msg) {
+    const messagesDiv = document.getElementById('messages');
+    const p = document.createElement('p');
+    p.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    messagesDiv.appendChild(p);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+</script>
+
+</body>
+</html>

@@ -27,7 +27,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouter() *gin.Engine {
+func InitHttpRouter() *gin.Engine {
 
 	//r := gin.Default() // 每次请求接口会打印请求状态和耗时等信息
 	// 如果想不显示，不要用 gin.Default()，改用 gin.New()。
@@ -67,6 +67,11 @@ func InitRouter() *gin.Engine {
 	// 只保留 panic 恢复
 	r.Use(gin.Recovery())
 	// 限制上传大小 32MB
+	// | 表达式       | 实际大小 |
+	//| --------- | ---- |
+	//| `1 << 10` | 1 KB |
+	//| `1 << 20` | 1 MB |
+	//| `1 << 30` | 1 GB |
 	//r.MaxMultipartMemory = 32 << 20
 
 	// 认证路由组
@@ -75,8 +80,8 @@ func InitRouter() *gin.Engine {
 	// router.Static("/static", "/var/www")
 	//r.Static("/assets", "./assets")
 
-	//tl := template.Must(template.New("").ParseFS(assets.HTML, "html/*.tmpl", "html/**/*.tmpl"))
-	tl := template.Must(template.New("").ParseFS(assets.HTML, "html/*.tmpl"))
+	tl := template.Must(template.New("").ParseFS(assets.HTML, "html/*.tmpl", "html/**/*.tmpl"))
+	//tl := template.Must(template.New("").ParseFS(assets.HTML, "html/*.tmpl"))
 	r.SetHTMLTemplate(tl)
 
 	// html 模板使用需要引用就是使用 /public/static/**/*.* 文件
@@ -105,6 +110,22 @@ func InitRouter() *gin.Engine {
 		c.JSON(200, gin.H{
 			"code":    1,
 			"message": "Invalid username or password",
+		})
+	})
+
+	// ws 测试页面
+	r.GET("/ws/test", func(c *gin.Context) {
+		//c.HTML(200, "login.html", nil)
+		c.HTML(http.StatusOK, "test.tmpl", gin.H{
+			"title": "ws test",
+		})
+	})
+
+	// ws 测试页面
+	r.GET("/sse/test", func(c *gin.Context) {
+		//c.HTML(200, "login.html", nil)
+		c.HTML(http.StatusOK, "sse.tmpl", gin.H{
+			"title": "ws test",
 		})
 	})
 
@@ -193,6 +214,54 @@ func InitRouter() *gin.Engine {
 			"status": "ok",
 		})
 	})
+
+	return r
+}
+
+func InitStreamRouter() *gin.Engine {
+	r := gin.New()
+
+	// 跨域处理
+	r.Use(cors.New(cors.Config{
+
+		AllowOrigins: []string{
+			"http://localhost:3000",
+			"http://127.0.0.1:3000",
+		},
+
+		AllowMethods: []string{
+			"GET",
+			"POST",
+			"PUT",
+			"DELETE",
+			"OPTIONS",
+		},
+
+		AllowHeaders: []string{
+			"Origin",
+			"Content-Type",
+			"Authorization",
+		},
+
+		ExposeHeaders: []string{
+			"Content-Length",
+		},
+
+		AllowCredentials: true,
+
+		MaxAge: 12 * time.Hour,
+	}))
+
+	// 只保留 panic 恢复
+	r.Use(gin.Recovery())
+
+	// 限制上传大小 32MB
+	// | 表达式       | 实际大小 |
+	//| --------- | ---- |
+	//| `1 << 10` | 1 KB |
+	//| `1 << 20` | 1 MB |
+	//| `1 << 30` | 1 GB |
+	//r.MaxMultipartMemory = 32 << 10
 
 	return r
 }

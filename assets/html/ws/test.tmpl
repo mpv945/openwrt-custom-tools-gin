@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WebSocket Demo</title>
+</head>
+<body>
+
+<h2>WebSocket Test</h2>
+
+<input id="msg"/>
+<button onclick="send()">Send</button>
+
+<pre id="log"></pre>
+
+<script>
+
+// const token = localStorage.getItem("token")
+// const ws = new WebSocket("ws://localhost:8080/ws?token=" + token + "&user=user1")
+const ws = new WebSocket("ws://localhost:9000/ws?id=user1&group=room1")
+
+ws.onopen = () => {
+    console.log("connected")
+}
+
+//ws.onmessage = (e) => {
+//    document.getElementById("log").innerHTML += e.data + "\n"
+//}
+ws.onmessage = (event) => {
+
+    let data;
+     // 初步检查是否是合法的 JSON 字符串
+     //if (event.data && event.data.trim().startsWith('{') && event.data.trim().endsWith('}')) {
+    try {
+        // 尝试解析数据，如果失败会抛出异常
+        data = JSON.parse(event.data);
+        // 如果解析成功，data 变量将包含解析后的 JSON 对象
+        console.log("Parsed data:", data);
+        // const message = JSON.parse(event.data);
+        if (data.event === "server_shutdown") {
+            alert("Server is shutting down. Please reconnect later.");
+            ws.close();
+        }
+    } catch (e) {
+        console.error("Invalid JSON data received:", event.data);
+        document.getElementById("log").innerHTML += event.data + "\n"
+        return;  // 如果解析失败，直接返回，避免后续代码出错
+    }
+}
+
+
+//ws.onclose = ()=>{
+//    console.log("connection closed")
+//}
+
+// 前端使用 window.onbeforeunload 监听浏览器关闭或刷新事件：
+window.onbeforeunload = function() {
+    // 在浏览器关闭之前通知服务器
+    if (ws) {
+        const message = {
+            type: 'client_event',
+            event: 'browser_close',
+            data: 'Browser closed'
+        };
+        ws.send(JSON.stringify(message));
+    }
+};
+
+// 当客户端主动关闭连接时，可以通过 onclose 事件来捕获：
+ws.onclose = function(event) {
+    const message = {
+        type: 'client_event',
+        event: 'ws_close',
+        data: `WebSocket closed: ${event.code} ${event.reason}`
+    };
+    console.log(message.data);  // 打印日志
+    // 发送关闭事件通知后端
+    ws.send(JSON.stringify(message));
+};
+
+//3. 网络断开、WiFi切换等事件
+// 浏览器的 navigator.onLine 和 window.addEventListener('online', ...) / window.addEventListener('offline', ...) 事件来检测网络状态变化。
+window.addEventListener('offline', function() {
+    console.log('Network disconnected');
+    ws.send(JSON.stringify({
+        type: 'client_event',
+        event: 'network_disconnect',
+        data: 'Network disconnected'
+    }));
+});
+
+window.addEventListener('online', function() {
+    console.log('Network reconnected');
+    ws.send(JSON.stringify({
+        type: 'client_event',
+        event: 'network_reconnect',
+        data: 'Network reconnected'
+    }));
+});
+
+//4. 客户端 crash
+// 这部分前端无法直接检测到，只能通过 ws.onerror 捕获 WebSocket 连接错误来推测客户端的异常状态。
+ws.onerror = function(event) {
+    console.error('WebSocket error:', event);
+    ws.send(JSON.stringify({
+        type: 'client_event',
+        event: 'ws_error',
+        data: 'WebSocket error occurred'
+    }));
+};
+
+function send(){
+
+    const msg = document.getElementById("msg").value
+    const jsonData = JSON.stringify({
+                type: "private",
+                to: "user1",
+                data: msg
+        })
+
+    ws.send(jsonData)
+}
+
+</script>
+
+</body>
+</html>

@@ -22,6 +22,8 @@ import (
 	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/utils/json"
 	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/utils/mqtt"
 	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/utils/redis"
+	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/utils/sse"
+	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/utils/ws"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -345,6 +347,48 @@ func (d *DeviceAPI) GetDevice(c *gin.Context) {
 	time.Sleep(5 * time.Second)
 
 	log.Println("业务执行完成")
+
+	// 发送ws消息
+	ws.SendTo("user1", []byte("你有新的消息"))
+	ws.SendToGroup("room1", []byte("room1群消息来了"))
+	ws.SendToGroup("room2", []byte("room2群消息来了"))
+	ws.SendAll([]byte("系统公告：服务器将在 5 分钟后维护"))
+
+	// 发送sse消息
+	// 推送用户 : Event 对应前端的监听，需要匹配
+	err44 := sse.Publish("sse_message", sse.Event{
+		Event:  "message",
+		Data:   "用户推送hello",
+		UserID: "1001",
+	})
+	if err44 != nil {
+		return
+	}
+	// 推送topic : Event 对应前端的监听，需要匹配
+	err45 := sse.Publish("sse_message", sse.Event{
+		Event: "order",
+		Data:  "群发",
+		Topic: "order",
+	})
+	if err45 != nil {
+		return
+	}
+	err48 := sse.Publish("sse_message", sse.Event{
+		Event: "order",
+		Data:  "群发_新",
+		Topic: "order_new",
+	})
+	if err48 != nil {
+		return
+	}
+	// 广播 : Event 对应前端的监听，需要匹配
+	err46 := sse.Publish("sse_message", sse.Event{
+		Event: "notice",
+		Data:  "广播",
+	})
+	if err46 != nil {
+		return
+	}
 
 	// Path 参数示例: GET /device/:id
 	id := c.Param("id")

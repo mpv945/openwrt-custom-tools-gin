@@ -11,6 +11,7 @@ import (
 	"github.com/go-redsync/redsync/v4"
 	goredis "github.com/go-redsync/redsync/v4/redis/goredis/v9"
 	"github.com/mpv945/openwrt-custom-tools-gin/src/com/ewancle/utils/json"
+
 	"github.com/redis/go-redis/v9"
 )
 
@@ -249,6 +250,7 @@ func Publish(channel string, msg Message) error {
 	}
 	return Client.Publish(Ctx, channel, data).Err()
 }
+
 func Subscribe(channel string, handler func(Message)) {
 
 	PubNub := Client.Subscribe(Ctx, channel)

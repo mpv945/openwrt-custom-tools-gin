@@ -1,5 +1,7 @@
 server:
-  port: 3000
+  port: ${SERVER_PORT:3000}
+socket:
+  port: ${SOCKET_PORT:9000}
 
 jwt:
   secret: secret-val

@@ -421,6 +421,23 @@ go get github.com/jackc/pgx/v5/stdlib
 go get github.com/google/uuid
 # 跨域请求
 go get github.com/gin-contrib/cors
+# token认证
+go get github.com/golang-jwt/jwt/v5
+# websocket 库
+go get github.com/gorilla/websocket
 
 启动：go run .\src\com\ewancle\main.go
+cmd:
+set GOOS=windows
+set GOARCH=amd64
+清理环境变量
+set GOOS=
+set GOARCH=
+PowerShell:
+$env:GOOS="linux"
+$env:GOARCH="amd64"
+或者
 $env:CGO_ENABLED="0"; $env:GOOS="windows"; $env:GOARCH="amd64"; go build -trimpath -ldflags "-s -w" -o build/app.exe ./src/com/ewancle 【main.go位置，如果在根目录不需要指定】
+清理环境变量
+Remove-Item Env:GOOS
+Remove-Item Env:GOARCH
