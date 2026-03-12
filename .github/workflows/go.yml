@@ -103,9 +103,10 @@ jobs:
           # git submodule update --init --recursive
       - name: Install deps
         run: |
-          apk add --no-cache git build-base musl-dev gcc
+          apk add --no-cache git build-base musl-dev gcc gh
           uname -ar
       - name: Build
+        # 对于 Alpine + CGO，只需 CC=gcc 就能正确编译静态 binary。GCC 默认会使用系统的 musl libc，因为 Alpine 是基于 musl 构建的。
         run: |
           CGO_ENABLED=1 \
           CC=gcc \
@@ -120,6 +121,14 @@ jobs:
       #  with:
       #    name: ${{ github.event.repository.name }}-linux-arm64-musl
       #    path: dist/*
+      - name: Upload artifact
+        run: |
+          gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+          # gh run upload-artifact my-artifact.zip
+          # 上传文件或目录，并指定 artifact 名称
+          gh run upload-artifact dist/${{ github.event.repository.name }}-linux-arm64-musl --name "${{ github.event.repository.name }}-linux-arm64-musl"
+          # 多个文件/目录上传
+          # gh run upload-artifact build/ logs/ --name "build-artifacts"
 
   matrix-build:
     runs-on: ubuntu-latest
@@ -144,6 +153,7 @@ jobs:
       # -ldflags "-s -w -H windowsgui" GUI 程序不弹 console， 如果是服务：设置不要用 windowsgui。
       # CGO_ENABLED=1 1️⃣ 可以调用 C/C++ 库 【sqlite, libc, libpcap ] glibc 都建议开启
       #  当你开启 CGO_ENABLED=1 时，Go 会调用系统的 C 编译器（通常是 GCC）去编译 runtime/cgo 的汇编文件。 （所以系统也要进行交叉gcc库：apt install gcc-aarch64-linux-gnu】 或设置=0
+      # 如果完全静态编译，不用 CGO → CGO_ENABLED=0
       - name: Build
         run: |
           mkdir -p dist
