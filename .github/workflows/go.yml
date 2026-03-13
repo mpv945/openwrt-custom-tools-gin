@@ -266,6 +266,7 @@ jobs:
           merge-multiple: true
           path: /tmp/${{ github.event.repository.name }}
           # 不是跨yml执行，默认就是当前run id 【${{ github.run_id }}】
+          run-id: ${{ github.run_id }}
           #run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
