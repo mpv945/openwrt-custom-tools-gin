@@ -3,11 +3,20 @@
 
 name: Go
 
+permissions:
+  contents: write
+  discussions: write
+
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    #branches: [ main ]
+    tags:
+      - 'v*'
+
+# 【push #1 → workflow A (运行中)然后push #2 → workflow B (触发)，workflow A ❌ 被取消，workflow B ✅ 接管执行】
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
 
@@ -238,6 +247,8 @@ jobs:
       AWS_ENDPOINT_URL: ${{ vars.R2_URL }}
       AWS_BUCKET: ${{ vars.R2_BUCKET }}
       AWS_DEFAULT_REGION: us-east-1
+
+      TAG_NAME: ${{ github.ref_name }}
     needs:
       - build
       - docker-build
@@ -281,6 +292,26 @@ jobs:
       - name: ls tmp
         run: |
           ls -alh /tmp/${{ github.event.repository.name }}*
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: load release catalog
+        run: |
+          export START_TIME="$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S %Z %z') Asia/Shanghai"
+          if [[ "$TAG_NAME" == *"-beta" ]]; then
+            export ICON="$TAG_NAME 测试版 🏁"
+          elif [[ "$TAG_NAME" == *"-rc" ]]; then
+            export ICON="$TAG_NAME 候选版 🏳️‍🌈"
+          else
+            export ICON="$TAG_NAME 正式版 🚩"
+          fi
+          envsubst < github_release_template.md > /tmp/${{ github.event.repository.name }}-release-catalog.md
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body_path: /tmp/${{ github.event.repository.name }}-release-catalog.md
+          files: |
+            /tmp/${{ github.event.repository.name }}/*
   cleanup:
     runs-on: ubuntu-latest
     environment: Cloudflare_R2
