@@ -166,6 +166,7 @@ jobs:
           echo "AWS_ENDPOINT_URL = $AWS_ENDPOINT_URL"
           echo "AWS_ACCESS_KEY_ID = $AWS_ACCESS_KEY_ID"
           echo "GITHUB_REPOSITORY = $GITHUB_REPOSITORY"
+          # 上传文件
           aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
 
   matrix-build:
