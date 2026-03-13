@@ -161,8 +161,9 @@ jobs:
           # 在 GitHub CI 中其实 **AWS CLI 已经预装**（ubuntu runner）。
           aws --version
           # aws configure CLI 正在等待交互输入进行配置
-          echo "$AWS_ENDPOINT_URL = $AWS_ENDPOINT_URL"
+          echo "AWS_ENDPOINT_URL = $AWS_ENDPOINT_URL"
           echo "AWS_ACCESS_KEY_ID = $AWS_ACCESS_KEY_ID"
+          echo "GITHUB_REPOSITORY = $GITHUB_REPOSITORY"
           aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
 
   matrix-build:
