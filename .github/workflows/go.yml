@@ -66,7 +66,7 @@ jobs:
       # GH_TOKEN 设置这个变量，无需登录
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_REPOSITORY: ${{ github.repository }}
-
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
       AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_KEY }}
       AWS_ENDPOINT_URL: ${{ vars.R2_URL }}
@@ -170,11 +170,11 @@ jobs:
           # 配置信息：https://docs.aws.amazon.com/zh_cn/cli/v1/userguide/cli-configure-envvars.html
           aws configure list
           # 上传文件： 命令选项： https://docs.aws.amazon.com/zh_cn/cli/v1/userguide/cli-configure-options.html
-          # aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
+          aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/github/actions/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
           # aws s3 ls s3://$AWS_BUCKET/test --endpoint-url $AWS_ENDPOINT_URL
           # 需要安装：groff
           # aws help
-          #aws s3api list-objects-v2 --bucket $AWS_BUCKET --endpoint-url https://f6026404ca25fbacfe337719b4c8052f.oss.fynf.eu.org --region us-east-1 --debug
+          #aws s3api list-objects-v2 --bucket $AWS_BUCKET --endpoint-url $AWS_ENDPOINT_URL --region us-east-1 --debug
 
   matrix-build:
     runs-on: ubuntu-latest
