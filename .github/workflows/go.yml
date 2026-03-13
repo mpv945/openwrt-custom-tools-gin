@@ -135,19 +135,19 @@ jobs:
       #  with:
       #    name: ${{ github.event.repository.name }}-linux-arm64-musl
       #    path: dist/*
-      - name: Install GitHub CLI
-        run: |
-          GH_VER=2.36.0
-          ARCH=$(uname -m)
-          case $ARCH in
-            x86_64) ARCH=amd64 ;;
-            aarch64) ARCH=arm64 ;;
-          esac
-          curl -L -o gh.tar.gz https://github.com/cli/cli/releases/download/v${GH_VER}/gh_${GH_VER}_linux_${ARCH}.tar.gz
-          tar -xzf gh.tar.gz
-          mv gh_${GH_VER}_linux_${ARCH}/bin/gh /usr/local/bin/gh
-          rm -rf gh_${GH_VER}_linux_${ARCH} gh.tar.gz
-          gh --version
+      #- name: Install GitHub CLI
+      #  run: |
+      #    GH_VER=2.36.0
+      #    ARCH=$(uname -m)
+      #    case $ARCH in
+      #      x86_64) ARCH=amd64 ;;
+      #      aarch64) ARCH=arm64 ;;
+      #    esac
+      #    curl -L -o gh.tar.gz https://github.com/cli/cli/releases/download/v${GH_VER}/gh_${GH_VER}_linux_${ARCH}.tar.gz
+      #    tar -xzf gh.tar.gz
+      #    mv gh_${GH_VER}_linux_${ARCH}/bin/gh /usr/local/bin/gh
+      #    rm -rf gh_${GH_VER}_linux_${ARCH} gh.tar.gz
+      #    gh --version
       - name: Upload artifact
         run: |
           # echo "${GITHUB_TOKEN}" | gh auth login --with-token
@@ -157,8 +157,8 @@ jobs:
           # 多个文件/目录上传
           # gh run upload-artifact build/ logs/ --name "build-artifacts"
           # 上传到当前 workflow run
-          RUN_ID=$(gh run list -L 1 --json databaseId -q '.[0].databaseId')
-          echo "Workflow run ID: $RUN_ID    系统变量run ID: ${{ github.event.workflow_run.id }}"
+          #RUN_ID=$(gh run list -L 1 --json databaseId -q '.[0].databaseId')
+          #echo "Workflow run ID: $RUN_ID  当前任务的运行id= ${{ github.run_id }}  系统变量上游的 run ID: ${{ github.event.workflow_run.id }}"
           #chmod +x ./upload-artifact.sh
           #./upload-artifact.sh ${{ github.event.repository.name }}-linux-arm64-musl dist/${{ github.event.repository.name }}-linux-arm64-musl
           # 在 GitHub CI 中其实 **AWS CLI 已经预装**（ubuntu runner）。
@@ -179,9 +179,10 @@ jobs:
           # 当前时间 +30分钟
           EXPIRY=$(date -u -d "@$(( $(date +%s) + 1800 ))" +"%Y-%m-%dT%H:%M:%SZ")
           echo "Expiry time【--expires 】: $EXPIRY"
-          aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/github/actions/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
+          aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/github/actions/${{ github.event.repository.name }}/${{ github.run_id }}/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
           # ls命令详情：https://docs.aws.amazon.com/cli/v1/reference/s3/ls.html
-          aws s3 ls s3://$AWS_BUCKET/github/ --recursive --human-readable --summarize --endpoint-url $AWS_ENDPOINT_URL
+          #aws s3 ls s3://$AWS_BUCKET/github/ --recursive --human-readable --summarize --endpoint-url $AWS_ENDPOINT_URL
+          aws s3 ls s3://$AWS_BUCKET/github/ --recursive --endpoint-url $AWS_ENDPOINT_URL
 
   matrix-build:
     runs-on: ubuntu-latest
@@ -229,6 +230,14 @@ jobs:
           name: ${{ github.event.repository.name }}-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/*
   deploy:
+    environment: Cloudflare_R2
+    env:
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_KEY }}
+      AWS_ENDPOINT_URL: ${{ vars.R2_URL }}
+      AWS_BUCKET: ${{ vars.R2_BUCKET }}
+      AWS_DEFAULT_REGION: us-east-1
     needs:
       - build
       - docker-build
@@ -250,6 +259,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: download
+        if: ${{ needs.build.result == 'success' || needs.matrix-build.result == 'success' }}
         uses: actions/download-artifact@v6
         with:
           pattern: ${{ github.event.repository.name }}-*
@@ -261,3 +271,12 @@ jobs:
       - name: test aws s3
         run: |
           aws --version
+      - name: s3 download
+        if: needs.docker-build.result == 'success'
+        run: |
+          # mv移动文件命令： https://docs.aws.amazon.com/cli/v1/reference/s3/mv.html
+          aws s3 mv s3://$AWS_BUCKET/github/actions/${{ github.event.repository.name }}/${{ github.run_id }}/${{ github.event.repository.name }}-linux-arm64-musl /tmp/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
+      - name: ls tmp
+        run: |
+          ls -alh /tmp/${{ github.event.repository.name }}*
+          
