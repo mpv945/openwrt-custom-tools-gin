@@ -176,7 +176,8 @@ jobs:
           
           # 上传文件： 命令选项： https://docs.aws.amazon.com/zh_cn/cli/v1/userguide/cli-configure-options.html
           # cp命令详情：https://docs.aws.amazon.com/cli/v1/reference/s3/cp.html, 可添加时间：--expires 2014-10-01T20:30:00Z
-          EXPIRY=$(date -u -d "+30 minutes" +"%Y-%m-%dT%H:%M:%SZ")
+          # 当前时间 +30分钟
+          EXPIRY=$(date -u -d "@$(( $(date +%s) + 1800 ))" +"%Y-%m-%dT%H:%M:%SZ")
           echo "Expiry time【--expires 】: $EXPIRY"
           aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/github/actions/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
           # ls命令详情：https://docs.aws.amazon.com/cli/v1/reference/s3/ls.html
