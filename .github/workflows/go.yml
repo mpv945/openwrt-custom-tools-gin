@@ -170,7 +170,8 @@ jobs:
           aws configure list
           # 上传文件： 命令选项： https://docs.aws.amazon.com/zh_cn/cli/v1/userguide/cli-configure-options.html
           # aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
-          aws s3 ls s3://$AWS_BUCKET/test --endpoint-url $AWS_ENDPOINT_URL
+          # aws s3 ls s3://$AWS_BUCKET/test --endpoint-url $AWS_ENDPOINT_URL
+          aws s3 api list-objects-v2 --bucket $AWS_BUCKET --endpoint-url $AWS_ENDPOINT_URL --region us-east-1
 
   matrix-build:
     runs-on: ubuntu-latest
