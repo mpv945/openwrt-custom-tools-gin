@@ -233,13 +233,20 @@ jobs:
       - build
       - docker-build
       - matrix-build
-    if: |
-      always() &&
-      (
-        needs.build.result == 'success' ||
-        needs.docker-build.result == 'success' ||
-        needs.matrix-build.result == 'success'
-      )
+    # | 值         | 含义  |
+    # | --------- | --- |
+    # | success   | 成功  |
+    # | failure   | 失败  |
+    # | cancelled | 被取消 |
+    # | skipped   | 被跳过 |
+#    if: |
+#      always() &&
+#      (
+#        needs.build.result == 'success' ||
+#        needs.docker-build.result == 'success' ||
+#        needs.matrix-build.result == 'success'
+#      )
+    if: always() && contains(needs.*.result, 'success')
     runs-on: ubuntu-latest
     steps:
       - name: download
