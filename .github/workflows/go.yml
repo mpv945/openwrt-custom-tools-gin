@@ -13,7 +13,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    if: false
+    #if: false
     steps:
     - name: Checkout source code
       uses: actions/checkout@v6
@@ -186,7 +186,7 @@ jobs:
 
   matrix-build:
     runs-on: ubuntu-latest
-    if: false
+    #if: false
 
     strategy:
       matrix:
@@ -279,4 +279,24 @@ jobs:
       - name: ls tmp
         run: |
           ls -alh /tmp/${{ github.event.repository.name }}*
-          
+  cleanup:
+    runs-on: ubuntu-latest
+    environment: Cloudflare_R2
+    env:
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_KEY }}
+      AWS_ENDPOINT_URL: ${{ vars.R2_URL }}
+      AWS_BUCKET: ${{ vars.R2_BUCKET }}
+      AWS_DEFAULT_REGION: us-east-1
+    if: always()
+    continue-on-error: true
+    needs:
+      - deploy
+    steps:
+      - name: Cleanup R2 oss
+        run: |
+          echo "Cleaning temp resources"
+          # rm 命令操作： https://docs.aws.amazon.com/zh_cn/cli/v1/userguide/cli-services-s3-commands.html
+          # https://docs.aws.amazon.com/cli/v1/reference/s3/rm.html
+          aws s3 rm s3://$AWS_BUCKET/github/actions/${{ github.event.repository.name }} --recursive --endpoint-url $AWS_ENDPOINT_URL
