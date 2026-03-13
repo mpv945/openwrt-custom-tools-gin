@@ -277,7 +277,7 @@ jobs:
         if: needs.docker-build.result == 'success'
         run: |
           # mv移动文件命令： https://docs.aws.amazon.com/cli/v1/reference/s3/mv.html
-          aws s3 mv s3://$AWS_BUCKET/github/actions/${{ github.event.repository.name }}/${{ github.run_id }}/${{ github.event.repository.name }}-linux-arm64-musl /tmp/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
+          aws s3 mv s3://$AWS_BUCKET/github/actions/${{ github.event.repository.name }}/${{ github.run_id }}/${{ github.event.repository.name }}-linux-arm64-musl /tmp/${{ github.event.repository.name }}/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
       - name: ls tmp
         run: |
           ls -alh /tmp/${{ github.event.repository.name }}*
