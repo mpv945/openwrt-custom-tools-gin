@@ -170,11 +170,12 @@ jobs:
           # 配置信息：https://docs.aws.amazon.com/zh_cn/cli/v1/userguide/cli-configure-envvars.html
           aws configure list
           # 上传文件： 命令选项： https://docs.aws.amazon.com/zh_cn/cli/v1/userguide/cli-configure-options.html
-          # aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/github/actions/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
+          # cp命令详情：https://docs.aws.amazon.com/cli/v1/reference/s3/cp.html
+          # aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/github/actions/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL --region us-east-1 --debug
           # aws s3 ls s3://$AWS_BUCKET/test --endpoint-url $AWS_ENDPOINT_URL
           # 需要安装：groff
           # aws help
-          aws s3api list-objects-v2 --bucket $AWS_BUCKET --endpoint-url $AWS_ENDPOINT_URL --region us-east-1 --debug
+          aws s3api list-objects-v2 --bucket $AWS_BUCKET --endpoint-url $AWS_ENDPOINT_URL --debug
 
   matrix-build:
     runs-on: ubuntu-latest
