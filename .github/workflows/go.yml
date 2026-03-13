@@ -171,7 +171,7 @@ jobs:
           aws configure list
           # 上传文件： 命令选项： https://docs.aws.amazon.com/zh_cn/cli/v1/userguide/cli-configure-options.html
           # cp命令详情：https://docs.aws.amazon.com/cli/v1/reference/s3/cp.html
-          # aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/github/actions/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL --region us-east-1 --debug
+          aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/github/actions/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL --region us-east-1 --debug
           # aws s3 ls s3://$AWS_BUCKET/test --endpoint-url $AWS_ENDPOINT_URL
           # 需要安装：groff
           # aws help
