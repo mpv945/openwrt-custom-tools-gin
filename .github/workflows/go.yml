@@ -158,7 +158,7 @@ jobs:
           # gh run upload-artifact build/ logs/ --name "build-artifacts"
           # 上传到当前 workflow run
           RUN_ID=$(gh run list -L 1 --json databaseId -q '.[0].databaseId')
-          echo "Workflow run ID: $RUN_ID"
+          echo "Workflow run ID: $RUN_ID    系统变量run ID: ${{ github.event.workflow_run.id }}"
           #chmod +x ./upload-artifact.sh
           #./upload-artifact.sh ${{ github.event.repository.name }}-linux-arm64-musl dist/${{ github.event.repository.name }}-linux-arm64-musl
           # 在 GitHub CI 中其实 **AWS CLI 已经预装**（ubuntu runner）。
@@ -233,6 +233,13 @@ jobs:
       - build
       - docker-build
       - matrix-build
+    if: |
+      always() &&
+      (
+        needs.build.result == 'success' ||
+        needs.docker-build.result == 'success' ||
+        needs.matrix-build.result == 'success'
+      )
     runs-on: ubuntu-latest
     steps:
       - name: download
