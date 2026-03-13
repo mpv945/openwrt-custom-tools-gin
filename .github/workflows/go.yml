@@ -58,6 +58,8 @@ jobs:
     #  run: go test -v ./...
   docker-build:
     runs-on: ubuntu-24.04-arm
+    # 在项目setting中添加的环境变量名称，才能读取对应环境下的变量（建议使用prod，test，dev来区分）
+    environment: Cloudflare_R2
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # GH_TOKEN 设置这个变量，无需登录
