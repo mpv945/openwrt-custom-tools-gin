@@ -103,7 +103,7 @@ jobs:
           # git submodule update --init --recursive
       - name: Install deps
         run: |
-          apk add --no-cache curl build-base musl-dev gcc zip
+          apk add --no-cache curl build-base musl-dev gcc zip aws-cli
           uname -ar
       - name: Build
         # 对于 Alpine + CGO，只需 CC=gcc 就能正确编译静态 binary。GCC 默认会使用系统的 musl libc，因为 Alpine 是基于 musl 构建的。
@@ -116,11 +116,11 @@ jobs:
           -tags "netgo osusergo" \
           -trimpath -buildvcs=false -ldflags '-s -w -linkmode external -extldflags "-static"' \
           -o dist/${{ github.event.repository.name }}-linux-arm64-musl ./src/com/ewancle
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ github.event.repository.name }}-linux-arm64-musl
-          path: dist/*
+      #- name: Upload artifact
+      #  uses: actions/upload-artifact@v6
+      #  with:
+      #    name: ${{ github.event.repository.name }}-linux-arm64-musl
+      #    path: dist/*
       - name: Install GitHub CLI
         run: |
           GH_VER=2.36.0
@@ -151,8 +151,11 @@ jobs:
           # 上传到当前 workflow run
           RUN_ID=$(gh run list -L 1 --json databaseId -q '.[0].databaseId')
           echo "Workflow run ID: $RUN_ID"
-          chmod +x ./upload-artifact.sh
-          ./upload-artifact.sh ${{ github.event.repository.name }}-linux-arm64-musl dist/${{ github.event.repository.name }}-linux-arm64-musl
+          #chmod +x ./upload-artifact.sh
+          #./upload-artifact.sh ${{ github.event.repository.name }}-linux-arm64-musl dist/${{ github.event.repository.name }}-linux-arm64-musl
+          # 在 GitHub CI 中其实 **AWS CLI 已经预装**（ubuntu runner）。
+          aws --version
+          aws configure
 
   matrix-build:
     runs-on: ubuntu-latest
