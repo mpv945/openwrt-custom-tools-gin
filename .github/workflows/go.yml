@@ -228,3 +228,22 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/*
+  deploy:
+    needs:
+      - build
+      - docker-build
+      - matrix-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: download
+        uses: actions/download-artifact@v6
+        with:
+          pattern: ${{ github.event.repository.name }}-*
+          merge-multiple: true
+          path: /tmp/${{ github.event.repository.name }}
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+      - name: test aws s3
+        run: |
+          aws --version
