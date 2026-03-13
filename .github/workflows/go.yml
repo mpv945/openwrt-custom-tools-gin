@@ -116,7 +116,7 @@ jobs:
           # git submodule update --init --recursive
       - name: Install deps
         run: |
-          apk add --no-cache curl build-base musl-dev gcc zip aws-cli
+          apk add --no-cache curl build-base musl-dev gcc zip aws-cli groff
           uname -ar
       - name: Build
         # 对于 Alpine + CGO，只需 CC=gcc 就能正确编译静态 binary。GCC 默认会使用系统的 musl libc，因为 Alpine 是基于 musl 构建的。
@@ -171,6 +171,7 @@ jobs:
           # 上传文件： 命令选项： https://docs.aws.amazon.com/zh_cn/cli/v1/userguide/cli-configure-options.html
           # aws s3 cp dist/${{ github.event.repository.name }}-linux-arm64-musl s3://$AWS_BUCKET/${{ github.event.repository.name }}-linux-arm64-musl --endpoint-url $AWS_ENDPOINT_URL
           # aws s3 ls s3://$AWS_BUCKET/test --endpoint-url $AWS_ENDPOINT_URL
+          # 需要安装：groff
           aws help
           aws s3api list-objects-v2 --bucket $AWS_BUCKET --endpoint-url $AWS_ENDPOINT_URL --region us-east-1
 
