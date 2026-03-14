@@ -50,11 +50,11 @@
 
 > 以下变更可能影响旧版本，请升级时注意, 本地图片：![UI](docs/images/ui.png)
 
-### 配置项变更
+#### 配置项变更
 
 `old_config` 已替换为 `new_config`
 
-### API 调整
+#### API 调整
 
 移除接口：
 
@@ -64,11 +64,11 @@
 
     v2/new-endpoint
 
-### 数据库结构调整
+#### 数据库结构调整
 
 升级时请执行数据库迁移脚本
 
-### ARM64 muslib 兼容问题
+#### ARM64 muslib 兼容问题
 
 upstream 已修复
 https://github.com/oracle/graal/issues/13087
