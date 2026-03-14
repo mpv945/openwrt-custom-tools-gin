@@ -1,0 +1,67 @@
+
+参考文档： https://zhuanlan.zhihu.com/p/1912178933211854827
+https://dash.cloudflare.com/  R2 免费有每月 10G 存储，100 万次 A 类操作，1000 万次 B 类操作，对于个人用户来说完全足够了。
+由于 R2 是国外的，因此域名不需要备份可以直接使用。而且文件的访问速度十分不错。
+选择 ”存储和数据库“ --> R2 对象存储 --> 概述
+创建存储桶 --> 【创建一个存储桶之后，转到设置界面。】 ： haijun-r2-oss （位置：自动； 默认存储类型：根据自己需求）
+设置：
+1. 【自定义域 --> 添加 】 域： oss.fynf.eu.org ； 最低TLS版本：选择1.2 ， 确认下一步： 提示添加一条CNAME到 DNS 记录到域名解析 （点击：连接到域） 会自动添加
+2. 【CORS 策略】 点击添加： AllowedOrigins：可以按需求添加，也可以设置* 其他："AllowedHeaders": ["Content-Type"], "ExposeHeaders": ["ETag"], "MaxAgeSeconds": 3600
+[
+  {
+    "AllowedOrigins": [
+      "http://localhost:3000"
+    ],
+    "AllowedMethods": [
+      "GET"
+    ]
+  }
+]
+
+3. 到域名：oss.fynf.eu.org中开启CDN加速，进行缓存设置 ： 选择 左侧 规则 --> 页面规则 --> 创建页面规则
+	URL （必需）： oss.fynf.eu.org/*
+
+	增加选择规则：
+		浏览器缓存TTL  一个月
+		缓存级别       缓存所有项目
+		编译缓存TTL    一个月
+3. 到域名：oss.fynf.eu.org进行安全设置 ： 选择 左侧 安全性 --> 安全规则 --> 新建自定义规则
+	规则名称： oss-rule-cn （第一个规则用于记录访问信息。）
+	编辑表达式： (http.host contains "oss.fynf.eu.org" and ip.src.country eq "CN") ；也可选择下来创建
+	措施：跳过
+	记录匹配请求： 点击跳过更多组件 后，选择 区域锁定
+
+	第二个规则用于防非法爬虫。（网络搜集的规则）： (cf.threat_score ge 5 and not cf.client.bot) or (not http.request.version in {"HTTP/1.2" "HTTP/2" "HTTP/3" "SPDY/3.1"}) or (not http.user_agent contains "Mozilla/")
+			措施：托管质问
+	第三个规则用于放行合法爬虫。（网络搜集的规则）：(cf.client.bot) or (http.user_agent contains "duckduckgo") or (http.user_agent contains "facebookexternalhit") or (http.user_agent contains "Feedfetcher-Google") or (http.user_agent contains "LinkedInBot") or (http.user_agent contains "Mediapartners-Google") or (http.user_agent contains "msnbot") or (http.user_agent contains "Slackbot") or (http.user_agent contains "TwitterBot") or (http.user_agent contains "ia_archive") or (http.user_agent contains "yahoo")
+			措施：跳过
+			记录匹配请求： 点击跳过更多组件 后，选择 所有其余自定义规则
+	在创建规则，有速率规则限制，需要转到web应用程序利用设置 【里面有很多规则类型可以创建： 限制我们选择 创建身份验证请求速率限制规则】
+		规则名称 （必需）： path-limit
+		当传入请求匹配时...： 可以编辑规则： (http.request.uri.path contains "/")
+		当速率超过…  50  10秒钟
+		然后采取措施… ： 阻止
+		持续时间达... ： 10秒钟 （自己需求确定）
+
+生成 API 访问密钥
+选择 ”存储和数据库“ --> R2 对象存储 --> 概述 （在右下角有 【Account Details】）
+点击 {} manage
+创建： 用户 API 令牌
+	配置权限：
+		名称： R2 User Token
+		权限： 对象读和写: 允许读取、写入和列出特定存储桶中的对象。
+		指定存储桶： 仅应用于特定存储桶： 选择上面创建的桶
+	 Cloudflare API 进行身份验证：使用令牌值： Rwjam
+	 S3 客户端使用： 访问密钥 ID： f29236af   机密访问密钥： 0bf954d2ad34b
+	 为 S3 客户端使用管辖权地特定的终结点：https://f6026404ca2519b4c8052f.r2.cloudflarestorage.com
+	 Github: 在项目setting页面，可以创建Environments = Configure Cloudflare_R2
+	 Environment secrets： 保密的内容，使用 ${{ secrets.GITHUB_TOKEN }}访问
+		R2_ACCESS_KEY
+		R2_SECRET_KEY
+		R2_API_TOKEN --> 对应令牌值
+	Environment variables 访问：${{ vars.ENVIRONMENT_STAGE }} 或者在env：设置 REPOSITORY_VAR: ${{ vars.REPOSITORY_VAR }}，如果内容在secrets，也会出现****掩码
+		R2_URL=https://oss.fynf.eu.org
+		R2_BUCKET=haijun-r2-oss
+		R2_API_TOKEN
+		R2_ACCESS_KEY
+		R2_SECRET_KEY
